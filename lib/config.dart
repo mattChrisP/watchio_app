@@ -1,21 +1,29 @@
 import 'package:flutter/material.dart';
 
 class Config {
-  final Color kPrimaryColor = const Color(0xFFFFC61F);
-  final Color kSecondaryColor = const Color(0xFFB5BFD0);
-  final Color kTextColor = const Color(0xFF50505D);
-  final Color kTextLightColor = const Color(0xFF6A727D);
-  final Color kShadowColor = const Color(0xFFB0CCE1);
   final double kDefaultPadding = 16.0;
+  final Color lightGreenishBlue = Color(0xff42f5d7);
+  final Color lightGreenishYellow = Color(0xffd1fc86);
+  final Color lightSilverBlue = Color(0xffd0f5f1);
+  final Color darkBlue = Color(0xff40677d);
+  final Color lightOrange = Color(0xfff5e3c6);
+  final Color mediumPurple = Color(0xffad7aeb);
 }
 
 Config config = Config();
 
-class Palette {
-  static const Color darkBlue = Color(0xff092E34);
-  static const Color lightBlue = Color(0xff489FB5);
-  static const Color orange = Color(0xffFFA62B);
-  static const Color darkOrange = Color(0xffCC7700);
-  static const Color lightBrown = Color(0xfff5e3c6);
-  static const Color lightOrange = Color(0xfff5ebd7);
+class HeaderCurvedContainer extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint paint = Paint()..color = config.mediumPurple;
+    Path path = Path()
+      ..relativeLineTo(0, 150)
+      ..quadraticBezierTo(size.width / 2, 225, size.width, 150)
+      ..relativeLineTo(0, -150)
+      ..close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

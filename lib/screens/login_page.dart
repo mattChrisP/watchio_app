@@ -234,8 +234,8 @@ class _LoginPageState extends State<LoginPage>
                               suffixIcon: IconButton(
                                 icon: Icon(Icons.remove_red_eye),
                                 color: this.noshowpass
-                                    ? Palette.darkBlue
-                                    : Palette.lightBlue,
+                                    ? Colors.grey
+                                    : Colors.black,
                                 onPressed: () {
                                   setState(
                                       () => this.noshowpass = !this.noshowpass);
@@ -311,7 +311,7 @@ class _LoginPageState extends State<LoginPage>
                                         style: TextStyle(
                                           fontSize: 16,
                                           decoration: TextDecoration.underline,
-                                          color: Palette.darkBlue,
+                                          color: config.lightGreenishBlue,
                                         ))),
                               ),
                               Row(

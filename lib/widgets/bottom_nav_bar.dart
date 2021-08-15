@@ -162,7 +162,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
                                     : Colors.grey.withOpacity(0.52),
                               ),
                               Text(
-                                "Profile",
+                                " Edit Profile",
                                 style: TextStyle(
                                     fontFamily: "MackinacBook", fontSize: 12),
                               ),
