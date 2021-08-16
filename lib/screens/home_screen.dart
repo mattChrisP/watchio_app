@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:watchlist_app/config.dart';
 import 'package:watchlist_app/widgets/bottom_nav_bar.dart';
 
 class HomePage extends StatelessWidget {
@@ -42,11 +44,19 @@ class _HomeScreenState extends State<HomeScreen> {
         ..rotateY(isDrawerOpen ? -0.5 : 0),
       duration: Duration(milliseconds: 250),
       decoration: BoxDecoration(
-          color: Colors.grey[200],
-          image: DecorationImage(
-            image: AssetImage("assets/images/kimi_no_nawa.png"),
-            fit: BoxFit.cover,
-          ),
+          gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                config.bluenishPurple,
+                config.mediumPurple,
+                config.mediumPink
+              ]),
+          // color: Colors.grey[200],
+          // image: DecorationImage(
+          //   image: AssetImage("assets/images/kimi_no_nawa.png"),
+          //   fit: BoxFit.cover,
+          // ),
           borderRadius: BorderRadius.circular(isDrawerOpen ? 40 : 0.0)),
       child: SingleChildScrollView(
         child: Stack(
@@ -54,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               height: size.height * 0.225,
               decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.5),
+                  color: config.mediumBlue.withOpacity(0.6),
                   borderRadius: BorderRadius.all(
                     Radius.circular(36),
                   )),
@@ -67,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Container(
                   margin: EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    // mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       isDrawerOpen
                           ? IconButton(
@@ -91,20 +101,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                   isDrawerOpen = true;
                                 });
                               }),
-                      Column(
-                        children: [
-                          Text(
-                            "Watchio",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 32,
-                              fontFamily: 'MackinacBook',
+                      Padding(
+                        padding: EdgeInsets.only(
+                            left:
+                                size.width / 4 - config.kDefaultPadding * 2.5),
+                        child: Column(
+                          children: [
+                            Text(
+                              "Watchio",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 32,
+                                letterSpacing: 1.5,
+                                fontFamily: 'MackinacBook',
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                      CircleAvatar()
                     ],
                   ),
                 ),
@@ -142,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         decoration: BoxDecoration(
                             border: Border(
                                 left: BorderSide(
-                                    color: Colors.lightBlue,
+                                    color: config.lightGreenishBlue,
                                     style: BorderStyle.solid,
                                     width: 3.0))),
                         child: Center(
@@ -156,6 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   fontWeight: FontWeight.w600,
                                   fontSize: 18,
                                   fontFamily: 'MackinacBook',
+                                  letterSpacing: 1.2,
                                 ),
                               ),
                             ],
@@ -176,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         decoration: BoxDecoration(
                             border: Border(
                                 left: BorderSide(
-                                    color: Colors.lightBlue,
+                                    color: config.lightGreenishBlue,
                                     style: BorderStyle.solid,
                                     width: 3.0))),
                         child: Center(
@@ -186,10 +202,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               Text(
                                 "Favourites",
                                 style: TextStyle(
-                                  color: Colors.black,
+                                  color: Colors.white,
                                   fontWeight: FontWeight.w600,
                                   fontSize: 18,
                                   fontFamily: 'MackinacBook',
+                                  letterSpacing: 1.2,
                                 ),
                               ),
                             ],
@@ -219,31 +236,38 @@ class DrawerScreen extends StatefulWidget {
 class _DrawerScreenState extends State<DrawerScreen> {
   @override
   Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
     return Container(
-      color: Colors.green,
-      padding: EdgeInsets.only(top: 50, bottom: 70, left: 10),
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [config.mediumBlue, config.bluenishPurple])),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
-              CircleAvatar(),
-              SizedBox(
-                width: 10,
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Matthew Christopher Pohadi',
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                    config.kDefaultPadding,
+                    config.kDefaultPadding * 3,
+                    config.kDefaultPadding,
+                    config.kDefaultPadding),
+                child: Container(
+                  padding: EdgeInsets.all(config.kDefaultPadding),
+                  width: size.width / 3,
+                  height: size.width / 3,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white, width: 5),
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                    image: DecorationImage(
+                      fit: BoxFit.cover,
+                      image: AssetImage('assets/images/kimetsu_movie.png'),
+                    ),
                   ),
-                  Text('Active Status',
-                      style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold))
-                ],
-              )
+                ),
+              ),
             ],
           ),
           Row(

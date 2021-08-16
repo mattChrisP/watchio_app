@@ -192,28 +192,8 @@ class _AnimeImagesEditState extends State<AnimeImagesEdit> {
                         .child("animes/${widget.animeId}/${newImageId}");
                     await firebaseStorageRef.putFile(image);
                     var downloadUrl = await firebaseStorageRef.getDownloadURL();
-
-                    // // print(basename(croppedFile.path));
-                    // File thumbnail =
-                    //     await FlutterImageCompress.compressAndGetFile(
-                    //   croppedFile.absolute.path,
-                    //   "${tempDir.absolute.path}/thumbnail_${basename(croppedFile.path)}",
-                    //   minWidth: 350,
-                    //   minHeight: 350,
-                    //   quality: 75,
-                    // );
-                    // final firebaseStorageRef2 = FirebaseStorage.instance
-                    //     .ref()
-                    //     .child(
-                    //         "items/${widget.animeId}/thumbnail/${newImageId}");
-                    // print("thumbnail file");
-                    // print(thumbnail);
-                    // await firebaseStorageRef2.putFile(thumbnail);
-                    // var downloadUrlThumbnail =
-                    //     await firebaseStorageRef2.getDownloadURL();
                     var json = {
                       "image_url": downloadUrl,
-                      // "thumbnail_url": downloadUrlThumbnail,
                       "order": -children.length
                     };
 

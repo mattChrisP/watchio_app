@@ -4,10 +4,14 @@ class Config {
   final double kDefaultPadding = 16.0;
   final Color lightGreenishBlue = Color(0xff42f5d7);
   final Color lightGreenishYellow = Color(0xffd1fc86);
+  final Color bluenishPurple = Color(0xff8545f5);
   final Color lightSilverBlue = Color(0xffd0f5f1);
+  final Color lightSilverPurple = Color(0xffdacbf2);
   final Color darkBlue = Color(0xff40677d);
   final Color lightOrange = Color(0xfff5e3c6);
   final Color mediumPurple = Color(0xffad7aeb);
+  final Color mediumPink = Color(0xfffc60d0);
+  final Color mediumBlue = Color(0xff4124ff);
 }
 
 Config config = Config();

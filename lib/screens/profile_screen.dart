@@ -1,4 +1,7 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path/path.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,16 +19,39 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final TextEditingController addBioController = TextEditingController();
-  final TextEditingController usernameController = TextEditingController();
-  final TextEditingController favouriteQuoteController =
+  TextEditingController addBioController = TextEditingController();
+  TextEditingController usernameController = TextEditingController();
+  TextEditingController favouriteQuoteController = TextEditingController();
+  TextEditingController favouriteMovieSeriesController =
       TextEditingController();
-  final TextEditingController favouriteMovieSeriesController =
-      TextEditingController();
+  List<dynamic> details = [];
+
+  void getInitialProfile() async {
+    dynamic data = await FirebaseFirestore.instance.collection("users").get();
+
+    for (var i = 0; i < data.docs.length; i++) {
+      this.details.add(data.docs[i].data());
+    }
+    print(this.details);
+    this.setState(() {});
+  }
+
+  @override
+  void initState() {
+    this.getInitialProfile();
+    // addBioController = TextEditingController(text: "");
+    // usernameController = TextEditingController(text: " ");
+    // favouriteQuoteController = TextEditingController(text: " ");
+    // favouriteMovieSeriesController = TextEditingController(text: " ");
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
+    print("this is details inside");
+    print(this.details);
     Size size = MediaQuery.of(context).size;
+    var downloadUrl = "";
     return Scaffold(
       body: SingleChildScrollView(
         physics: ScrollPhysics(),
@@ -114,7 +140,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         minHeight: 250,
                         quality: 50,
                       );
-                      setState(() {});
+                      final firebaseStorageRef = FirebaseStorage.instance
+                          .ref()
+                          .child(
+                              'users/${FirebaseAuth.instance.currentUser.uid}');
+                      await firebaseStorageRef.putFile(image);
+                      downloadUrl = await firebaseStorageRef.getDownloadURL();
                     }
                   },
                 ),
@@ -150,12 +181,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Column(
                         children: [
                           TextFormField(
+                            // initialValue: this.details[0]["userBio"],
                             keyboardType: TextInputType.multiline,
                             maxLines: 3,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp("[a-zA-Z0-9 &()\"+\$?.:]"))
-                            ],
+                            inputFormatters: [],
                             controller: addBioController,
                             onChanged: (value) => {},
                             textCapitalization: TextCapitalization.words,
@@ -334,7 +363,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     FunctionButton(
-                      onTap: () {},
+                      onTap: () async {
+                        FirebaseFirestore.instance
+                            .collection("users")
+                            .doc(FirebaseAuth.instance.currentUser.uid)
+                            .set({
+                          "userBio": addBioController.text,
+                          "username": usernameController.text,
+                          "userQuote": favouriteQuoteController.text,
+                          "userFavMovieSeries":
+                              favouriteMovieSeriesController.text,
+                          "userProfilePicture": downloadUrl,
+                        });
+                      },
                       width: size.width * 0.7,
                       text: "Save",
                     ),
