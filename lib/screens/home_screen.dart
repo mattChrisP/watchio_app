@@ -1,8 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:watchlist_app/config.dart';
 import 'package:watchlist_app/widgets/bottom_nav_bar.dart';
+import 'package:watchlist_app/widgets/display_card.dart';
+import 'package:watchlist_app/widgets/loading.dart';
 
 class HomePage extends StatelessWidget {
   static const routeName = '/home_page';
@@ -70,6 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   )),
             ),
             Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
                   height: 50,
@@ -92,7 +96,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               },
                             )
                           : IconButton(
-                              icon: Icon(Icons.menu),
+                              icon: Icon(
+                                Icons.menu,
+                                color: Colors.white,
+                              ),
                               onPressed: () {
                                 setState(() {
                                   xOffset = 230;
@@ -124,8 +131,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 40.0, horizontal: 32.0),
+                  padding: EdgeInsets.only(
+                      left: 32.0,
+                      right: 32,
+                      top: 40,
+                      bottom: config.kDefaultPadding / 2),
                   child: Container(
                     height: 50,
                     padding: EdgeInsets.symmetric(horizontal: 25),
@@ -177,13 +187,93 @@ class _HomeScreenState extends State<HomeScreen> {
                             ],
                           ),
                         ))),
-                Container(
-                  width: size.width,
-                  height: 200,
-                  child: Center(
-                    child: Text("You do not have any watchlist currently"),
+                SingleChildScrollView(
+                  physics: ScrollPhysics(),
+                  scrollDirection: Axis.horizontal,
+                  child: Container(
+                    height: 200,
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding:
+                              EdgeInsets.only(left: config.kDefaultPadding * 2),
+                          child: ListView.builder(
+                              physics: ScrollPhysics(),
+                              scrollDirection: Axis.horizontal,
+                              shrinkWrap: true,
+                              padding: EdgeInsets.all(8),
+                              itemCount: 3,
+                              itemBuilder: (BuildContext context, int index) {
+                                // return DisplayCard();
+                                return DisplayCard();
+                              }),
+                        ),
+                        InkWell(
+                          onTap: () {
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                              '/add_watchlist',
+                              (Route<dynamic> route) => false,
+                            );
+                          },
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                                bottom: config.kDefaultPadding,
+                                right: config.kDefaultPadding),
+                            child: Container(
+                              width: 125,
+                              height: 168,
+                              padding: EdgeInsets.all(config.kDefaultPadding),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(6),
+                                ),
+                                border:
+                                    Border.all(color: Colors.white, width: 5),
+                                color: config.lightSilverBlue,
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.add,
+                                  ),
+                                  Text(
+                                    "Add",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
+                                      fontFamily: 'MackinacBook',
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                  Text(
+                                    "Watchlist",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
+                                      fontFamily: 'MackinacBook',
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
+
+                // Container(
+                //   width: size.width,
+                //   height: 200,
+                //   child: Center(
+                //     child: Text("You do not have any watchlist currently"),
+                //   ),
+                // ),
                 Padding(
                     padding: EdgeInsets.only(left: 20.0),
                     child: Container(
@@ -234,8 +324,29 @@ class DrawerScreen extends StatefulWidget {
 }
 
 class _DrawerScreenState extends State<DrawerScreen> {
+  List<dynamic> details = [];
+  void getInitialProfile() async {
+    dynamic data = await FirebaseFirestore.instance.collection("users").get();
+
+    for (var i = 0; i < data.docs.length; i++) {
+      this.details.add(data.docs[i].data());
+    }
+    print(this.details);
+    this.setState(() {});
+  }
+
+  // @override
+  // void initState() {
+  //   this.getInitialProfile();
+  //   super.initState();
+  // }
+
   @override
   Widget build(BuildContext context) {
+    if (this.details.isEmpty == true) {
+      this.getInitialProfile();
+    }
+
     Size size = MediaQuery.of(context).size;
     return Container(
       decoration: BoxDecoration(
@@ -266,6 +377,18 @@ class _DrawerScreenState extends State<DrawerScreen> {
                       image: AssetImage('assets/images/kimetsu_movie.png'),
                     ),
                   ),
+                ),
+              ),
+              Text(
+                this.details[0]["username"] == null
+                    ? "Username"
+                    : this.details[0]["username"],
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                  fontFamily: 'MackinacBook',
+                  letterSpacing: 1.2,
                 ),
               ),
             ],

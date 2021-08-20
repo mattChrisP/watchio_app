@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:watchlist_app/screens/edit_watchlist.dart';
 import 'package:watchlist_app/screens/explore_screen.dart';
 import 'package:watchlist_app/screens/home_screen.dart';
 import 'package:watchlist_app/screens/profile_screen.dart';
-import 'package:watchlist_app/screens/watclist_screen.dart';
+import 'package:watchlist_app/screens/add_watclist_screen.dart';
 
 class BottomNavBar extends StatefulWidget {
   final String current;
@@ -137,7 +138,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
                               PageRouteBuilder(
                                   pageBuilder:
                                       (context, animation1, animation2) =>
-                                          AddWatchlistScreen(),
+                                          EditWatchlist(),
                                   transitionDuration: Duration(seconds: 0)));
                         },
                       ),

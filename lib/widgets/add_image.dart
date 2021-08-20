@@ -10,6 +10,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart';
 
+class AnimeImageController {
+  List imageController = [];
+}
+
 class AnimeImagesEdit extends StatefulWidget {
   final String animeId;
 

@@ -8,7 +8,10 @@ class Config {
   final Color lightSilverBlue = Color(0xffd0f5f1);
   final Color lightSilverPurple = Color(0xffdacbf2);
   final Color darkBlue = Color(0xff40677d);
+  final Color darkPolkadot = Color(0xff0d423b);
+  final Color darkPurple = Color(0xff3e2766);
   final Color lightOrange = Color(0xfff5e3c6);
+  final Color superLightOrange = Color(0xffFFF9E3);
   final Color mediumPurple = Color(0xffad7aeb);
   final Color mediumPink = Color(0xfffc60d0);
   final Color mediumBlue = Color(0xff4124ff);
