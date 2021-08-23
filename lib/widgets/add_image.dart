@@ -9,6 +9,7 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart';
+import 'package:watchlist_app/config.dart';
 
 class AnimeImageController {
   List imageController = [];
@@ -65,7 +66,7 @@ class _AnimeImagesEditState extends State<AnimeImagesEdit> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        height: 116,
+        height: 168,
         child: Builder(builder: (context) {
           var children = <Widget>[];
           children = this
@@ -76,8 +77,8 @@ class _AnimeImagesEditState extends State<AnimeImagesEdit> {
                   padding: EdgeInsets.all(8),
                   child: Stack(overflow: Overflow.visible, children: [
                     Container(
-                      width: 100,
-                      height: 100,
+                      width: 125,
+                      height: 168,
                       decoration: BoxDecoration(
                           image: DecorationImage(
                             fit: BoxFit.fill,
@@ -144,12 +145,116 @@ class _AnimeImagesEditState extends State<AnimeImagesEdit> {
           return ListView(
             scrollDirection: Axis.horizontal,
             children: [
+              // Padding(
+              //   key: ValueKey(0),
+              //   padding: EdgeInsets.all(8),
+              //   child: MaterialButton(
+              //     height: 100,
+              //     onPressed: () async {
+              //       var file = await ImagePicker().getImage(
+              //           // maxHeight: 800,
+              //           // maxWidth: 800,
+              //           source: ImageSource.gallery,
+              //           imageQuality: 100);
+              //       print("filepath: " + file.path);
+              //       File croppedFile = await ImageCropper.cropImage(
+              //           sourcePath: file.path,
+              //           // aspectRatioPresets: Platform.isAndroid
+              //           //     ? [
+              //           //         CropAspectRatioPreset.ratio7x5,
+              //           //       ]
+              //           //     : [
+              //           //         CropAspectRatioPreset.ratio7x5,
+              //           //       ],
+              //           aspectRatio: CropAspectRatio(ratioX: 7, ratioY: 10),
+              //           androidUiSettings: AndroidUiSettings(
+              //               toolbarTitle: 'Crop Image',
+              //               toolbarColor: Colors.brown[800],
+              //               toolbarWidgetColor: Colors.white,
+              //               initAspectRatio: CropAspectRatioPreset.original,
+              //               lockAspectRatio: false),
+              //           iosUiSettings: IOSUiSettings(
+              //             title: 'Crop Image',
+              //           ));
+              //       // croppedFile.path
+              //       // Image image = decodeImage(new Io.File('test.jpg').readAsBytesSync());
+
+              //       // // Resize the image to a 120x? thumbnail (maintaining the aspect ratio).
+              //       // Image thumbnail = copyResize(image, width: 120);
+              //       if (croppedFile == null) {
+              //         return;
+              //       }
+              //       Directory tempDir = await getTemporaryDirectory();
+              //       var newImageId = Uuid().v4();
+              //       File image = await FlutterImageCompress.compressAndGetFile(
+              //         croppedFile.absolute.path,
+              //         "${tempDir.absolute.path}/image_${basename(croppedFile.path)}",
+              //         minWidth: 700,
+              //         minHeight: 700,
+              //         quality: 50,
+              //       );
+              //       final firebaseStorageRef = FirebaseStorage.instance
+              //           .ref()
+              //           .child("animes/${widget.animeId}/${newImageId}");
+              //       await firebaseStorageRef.putFile(image);
+              //       var downloadUrl = await firebaseStorageRef.getDownloadURL();
+              //       var json = {
+              //         "image_url": downloadUrl,
+              //         "order": -children.length
+              //       };
+
+              //       await FirebaseFirestore.instance
+              //           .collection("animes")
+              //           .doc(widget.animeId)
+              //           .collection("images")
+              //           .doc(newImageId)
+              //           .set(json);
+
+              //       // await FirebaseFirestore.instance
+              //       //     .collection("animes")
+              //       //     .doc(widget.animeId)
+              //       //     .set({
+              //       //   "image_url": downloadUrl,
+              //       //   // "thumbnail_url": downloadUrlThumbnail
+              //       // });
+
+              //       json["id"] = newImageId;
+
+              //       this.setState(() {
+              //         images.insert(0, json);
+              //       });
+              //     },
+              //     color: Colors.white,
+              //     textColor: Colors.grey,
+              //     child: Column(
+              //       mainAxisAlignment: MainAxisAlignment.center,
+              //       crossAxisAlignment: CrossAxisAlignment.center,
+              //       children: [
+              //         Icon(
+              //           Icons.photo_camera,
+              //           size: 30,
+              //         ),
+              //         Text(
+              //           "Add a photo",
+              //           style: TextStyle(
+              //             fontSize: 10,
+              //             fontFamily: "MackinacBook",
+              //           ),
+              //         ),
+              //       ],
+              //     ),
+              //     padding: EdgeInsets.all(20),
+              //     shape: RoundedRectangleBorder(
+              //       borderRadius: BorderRadius.all(
+              //         Radius.circular(8),
+              //       ),
+              //     ),
+              //   ),
+              // ),
               Padding(
-                key: ValueKey(0),
                 padding: EdgeInsets.all(8),
-                child: MaterialButton(
-                  height: 100,
-                  onPressed: () async {
+                child: InkWell(
+                  onTap: () async {
                     var file = await ImagePicker().getImage(
                         // maxHeight: 800,
                         // maxWidth: 800,
@@ -158,13 +263,14 @@ class _AnimeImagesEditState extends State<AnimeImagesEdit> {
                     print("filepath: " + file.path);
                     File croppedFile = await ImageCropper.cropImage(
                         sourcePath: file.path,
-                        aspectRatioPresets: Platform.isAndroid
-                            ? [
-                                CropAspectRatioPreset.square,
-                              ]
-                            : [
-                                CropAspectRatioPreset.square,
-                              ],
+                        // aspectRatioPresets: Platform.isAndroid
+                        //     ? [
+                        //         CropAspectRatioPreset.ratio7x5,
+                        //       ]
+                        //     : [
+                        //         CropAspectRatioPreset.ratio7x5,
+                        //       ],
+                        aspectRatio: CropAspectRatio(ratioX: 7, ratioY: 10),
                         androidUiSettings: AndroidUiSettings(
                             toolbarTitle: 'Crop Image',
                             toolbarColor: Colors.brown[800],
@@ -222,33 +328,39 @@ class _AnimeImagesEditState extends State<AnimeImagesEdit> {
                       images.insert(0, json);
                     });
                   },
-                  color: Colors.white,
-                  textColor: Colors.grey,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.photo_camera,
-                        size: 30,
+                  child: Container(
+                    width: 125,
+                    height: 168,
+                    padding: EdgeInsets.all(config.kDefaultPadding),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(6),
                       ),
-                      Text(
-                        "Add a photo",
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontFamily: "MackinacBook",
+                      border: Border.all(
+                          color: config.lightOrange.withOpacity(0.3), width: 5),
+                      color: Colors.white,
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.photo_camera,
+                          size: 30,
                         ),
-                      ),
-                    ],
-                  ),
-                  padding: EdgeInsets.all(20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(8),
+                        Text(
+                          "Add a photo",
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontFamily: "MackinacBook",
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
+
               ReorderableRow(
                 scrollController: ScrollController(),
                 crossAxisAlignment: CrossAxisAlignment.start,

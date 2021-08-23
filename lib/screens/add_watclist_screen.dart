@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:searchable_dropdown/searchable_dropdown.dart';
 import 'package:uuid/uuid.dart';
 import 'package:watchlist_app/config.dart';
 import 'package:watchlist_app/widgets/add_image.dart';
@@ -14,22 +15,40 @@ import 'package:watchlist_app/widgets/bottom_nav_bar.dart';
 import 'package:watchlist_app/widgets/buttons.dart';
 
 class AddWatchlistScreen extends StatefulWidget {
+  final bool edit;
+  final dynamic animeInfo;
+  final dynamic animeImage;
   static const routeName = "/add_watchlist";
+
+  const AddWatchlistScreen(
+      {Key key, @required this.edit, this.animeInfo, this.animeImage})
+      : super(key: key);
   @override
   _AddWatchlistScreenState createState() => _AddWatchlistScreenState();
 }
 
 class _AddWatchlistScreenState extends State<AddWatchlistScreen> {
   var currentUser = FirebaseAuth.instance.currentUser.uid;
-  final TextEditingController titleController = TextEditingController();
-  final TextEditingController genresController = TextEditingController();
-  final TextEditingController synopsisController = TextEditingController();
+  StatusInputController statusController = StatusInputController();
+  TextEditingController titleController = TextEditingController();
+  TextEditingController genresController = TextEditingController();
+  TextEditingController synopsisController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String animeId = Uuid().v4();
   File imageFile;
 
   @override
   Widget build(BuildContext context) {
+    if (widget.edit == true) {
+      statusController.choice = widget.animeInfo["status"];
+      titleController =
+          TextEditingController(text: widget.animeInfo["movieTitle"]);
+      genresController =
+          TextEditingController(text: widget.animeInfo["movieGenre"]);
+      synopsisController =
+          TextEditingController(text: widget.animeInfo["movieSynopsis"]);
+    }
+
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: config.mediumPurple,
@@ -40,10 +59,7 @@ class _AddWatchlistScreenState extends State<AddWatchlistScreen> {
           icon: Icon(Icons.arrow_back),
           color: Colors.white,
           onPressed: () {
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              '/edit_watchlist',
-              (Route<dynamic> route) => false,
-            );
+            Navigator.of(context).pop();
           },
         ),
       ),
@@ -102,10 +118,39 @@ class _AddWatchlistScreenState extends State<AddWatchlistScreen> {
                       height: 8,
                     ),
                     AnimeImagesEdit(
-                      animeId: animeId,
+                      animeId:
+                          widget.edit ? widget.animeInfo["animeId"] : animeId,
                     ),
                     SizedBox(
                       height: 8,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Status",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 18,
+                              fontFamily: 'MackinacBook',
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          SizedBox(height: config.kDefaultPadding / 2),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              StatusInput(
+                                controller: statusController,
+                                width: size.width,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                     Padding(
                       padding: EdgeInsets.only(left: 8),
@@ -119,6 +164,7 @@ class _AddWatchlistScreenState extends State<AddWatchlistScreen> {
                               fontWeight: FontWeight.w600,
                               fontSize: 18,
                               fontFamily: 'MackinacBook',
+                              letterSpacing: 1.2,
                             ),
                           ),
                           SizedBox(
@@ -137,10 +183,7 @@ class _AddWatchlistScreenState extends State<AddWatchlistScreen> {
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: TextField(
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                        RegExp("[a-zA-Z0-9 &()\"+\$?.:]"))
-                                  ],
+                                  inputFormatters: [],
                                   controller: titleController,
                                   onChanged: (value) => {},
                                   textCapitalization: TextCapitalization.words,
@@ -271,17 +314,37 @@ class _AddWatchlistScreenState extends State<AddWatchlistScreen> {
                                 // await imageRef.putFile(this.imageFile);
                                 // String imageUrl =
                                 //     await imageRef.getDownloadURL();
-                                FirebaseFirestore.instance
-                                    .collection("animes")
-                                    .doc(animeId)
-                                    .set({
-                                  "uid": currentUser,
-                                  "movieTitle": titleController.text,
-                                  "movieGenre": genresController.text,
-                                  "movieSynopsis": synopsisController.text,
-                                  "favourite": false,
-                                });
-                                Navigator.of(context).pop();
+                                widget.edit
+                                    ? FirebaseFirestore.instance
+                                        .collection("animes")
+                                        .doc(animeId)
+                                        .update({
+                                        "uid": currentUser,
+                                        "movieTitle": titleController.text,
+                                        "movieGenre": genresController.text,
+                                        "movieSynopsis":
+                                            synopsisController.text,
+                                        "favourite": false,
+                                        "status": statusController.choice,
+                                        "animeId": animeId,
+                                      })
+                                    : FirebaseFirestore.instance
+                                        .collection("animes")
+                                        .doc(animeId)
+                                        .set({
+                                        "uid": currentUser,
+                                        "movieTitle": titleController.text,
+                                        "movieGenre": genresController.text,
+                                        "movieSynopsis":
+                                            synopsisController.text,
+                                        "favourite": false,
+                                        "status": statusController.choice,
+                                        "animeId": animeId,
+                                      });
+                                Navigator.of(context).pushNamedAndRemoveUntil(
+                                  '/edit_watchlist',
+                                  (Route<dynamic> route) => false,
+                                );
                               }
                             },
                             width: size.width * 0.7,
@@ -297,6 +360,84 @@ class _AddWatchlistScreenState extends State<AddWatchlistScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class StatusInputController {
+  String choice;
+}
+
+class StatusInput extends StatefulWidget {
+  final StatusInputController controller;
+  final double width;
+
+  const StatusInput({
+    Key key,
+    this.controller,
+    this.width,
+  }) : super(key: key);
+
+  StatusInputState createState() => StatusInputState();
+}
+
+class StatusInputState extends State<StatusInput> {
+  String selectedStatus;
+  List StatusMenu = [
+    "Already Watched",
+    "Currently Watching",
+    "Will Watch",
+  ];
+
+  @override
+  void setState(fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(left: config.kDefaultPadding / 2),
+      width: widget.width,
+      decoration: BoxDecoration(
+        color: config.lightOrange.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: SizedBox(
+          child: DropdownButton(
+        hint: Text(
+          "Status",
+          style: TextStyle(
+            color: Colors.black.withOpacity(0.42),
+            fontSize: 12,
+            fontFamily: "MackinacBook",
+          ),
+        ),
+        dropdownColor: config.lightOrange,
+        icon: Icon(Icons.arrow_drop_down),
+        iconSize: 24,
+        isExpanded: true,
+        underline: SizedBox(),
+        // style: TextStyle(
+        //   color: Colors.black,
+        //   fontSize: 12,
+        //   fontFamily: "MackinacBook",
+        // ),
+        value: widget.controller.choice,
+        onChanged: (newStatus) {
+          this.setState(() {
+            widget.controller.choice = newStatus;
+          });
+        },
+        items: this.StatusMenu.map((statusMenu) {
+          return DropdownMenuItem(
+            value: statusMenu,
+            child: Text(statusMenu),
+          );
+        }).toList(),
+      )),
     );
   }
 }

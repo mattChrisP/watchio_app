@@ -1,12 +1,58 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:watchlist_app/config.dart';
+import 'package:watchlist_app/screens/add_watclist_screen.dart';
 import 'package:watchlist_app/widgets/bottom_nav_bar.dart';
 import 'package:watchlist_app/widgets/editable_card.dart';
+import 'package:watchlist_app/widgets/loading.dart';
 
-class EditWatchlist extends StatelessWidget {
+class EditWatchlist extends StatefulWidget {
   static const routeName = '/edit_watchlist';
+
+  @override
+  _EditWatchlistState createState() => _EditWatchlistState();
+}
+
+class _EditWatchlistState extends State<EditWatchlist> {
+  List<dynamic> info = [];
+
+  List<dynamic> images = [];
+
+  void getAnimeInfo() async {
+    dynamic data = await FirebaseFirestore.instance.collection("animes").get();
+    for (var i = 0; i < data.docs.length; i++) {
+      this.info.add(data.docs[i].data());
+
+      List image = [];
+      dynamic imageData = await FirebaseFirestore.instance
+          .collection("animes")
+          .doc(data.docs[i].data()["animeId"])
+          .collection("images")
+          .orderBy("order", descending: false)
+          .get();
+      for (var i = 0; i < imageData.docs.length; i++) {
+        image.add(imageData.docs[i].data());
+      }
+      this.images.add(image);
+    }
+    this.setState(() {});
+  }
+
+  @override
+  void initState() {
+    this.getAnimeInfo();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (this.info.isEmpty || this.images.isEmpty) {
+      return Loading();
+    }
+    print("below is iamges");
+    print(this.images);
+    print("below is info");
+    print(this.info);
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       body: SingleChildScrollView(
@@ -73,10 +119,13 @@ class EditWatchlist extends StatelessWidget {
                   children: [
                     InkWell(
                       onTap: () {
-                        Navigator.of(context).pushNamedAndRemoveUntil(
-                          '/add_watchlist',
-                          (Route<dynamic> route) => false,
-                        );
+                        Navigator.push(
+                            context,
+                            PageRouteBuilder(
+                                pageBuilder:
+                                    (context, animation1, animation2) =>
+                                        AddWatchlistScreen(edit: false),
+                                transitionDuration: Duration(seconds: 0)));
                       },
                       child: Padding(
                         padding: EdgeInsets.only(
@@ -133,13 +182,16 @@ class EditWatchlist extends StatelessWidget {
                           child: GridView.builder(
                             physics: ScrollPhysics(),
                             shrinkWrap: true,
-                            itemCount: 8,
+                            itemCount: this.info.length,
                             gridDelegate:
                                 SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
                               childAspectRatio: 0.7,
                             ),
-                            itemBuilder: (context, index) => EditableCard(),
+                            itemBuilder: (context, int index) => EditableCard(
+                              animeInfo: this.info[index],
+                              animeImage: this.images[index],
+                            ),
                           ),
                         ),
                       ),

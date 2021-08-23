@@ -1,8 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:watchlist_app/config.dart';
+import 'package:watchlist_app/screens/add_watclist_screen.dart';
 import 'package:watchlist_app/widgets/bottom_nav_bar.dart';
 import 'package:watchlist_app/widgets/display_card.dart';
 import 'package:watchlist_app/widgets/loading.dart';
@@ -32,6 +34,46 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  List<dynamic> info = [];
+  List<dynamic> favAnime = [];
+  List<dynamic> images = [];
+  List<dynamic> favAnimeImage = [];
+
+  void getAnimeInfo() async {
+    dynamic data = await FirebaseFirestore.instance.collection("animes").get();
+    for (var i = 0; i < data.docs.length; i++) {
+      this.info.add(data.docs[i].data());
+      dynamic imageData = await FirebaseFirestore.instance
+          .collection("animes")
+          .doc(data.docs[i].data()["animeId"])
+          .collection("images")
+          .orderBy("order", descending: false)
+          .get();
+      if (data.docs[i].data()["favourite"] == true) {
+        this.favAnime.add(data.docs[i].data());
+        List favImage = [];
+        for (var i = 0; i < imageData.docs.length; i++) {
+          favImage.add(imageData.docs[i].data());
+        }
+        this.favAnimeImage.add(favImage);
+      }
+
+      List image = [];
+
+      for (var i = 0; i < imageData.docs.length; i++) {
+        image.add(imageData.docs[i].data());
+      }
+      this.images.add(image);
+    }
+    this.setState(() {});
+  }
+
+  @override
+  void initState() {
+    this.getAnimeInfo();
+    super.initState();
+  }
+
   double xOffset = 0;
   double yOffset = 0;
   double scaleFactor = 1;
@@ -40,6 +82,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (this.info.isEmpty || this.images.isEmpty) {
+      return Loading();
+    }
+
     Size size = MediaQuery.of(context).size;
     return AnimatedContainer(
       transform: Matrix4.translationValues(xOffset, yOffset, 0)
@@ -85,7 +131,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       isDrawerOpen
                           ? IconButton(
-                              icon: Icon(Icons.arrow_back_ios),
+                              icon: Icon(
+                                Icons.arrow_back_ios,
+                                color: Colors.white,
+                              ),
                               onPressed: () {
                                 setState(() {
                                   xOffset = 0;
@@ -202,18 +251,25 @@ class _HomeScreenState extends State<HomeScreen> {
                               scrollDirection: Axis.horizontal,
                               shrinkWrap: true,
                               padding: EdgeInsets.all(8),
-                              itemCount: 3,
+                              itemCount: this.info.length,
                               itemBuilder: (BuildContext context, int index) {
-                                // return DisplayCard();
-                                return DisplayCard();
+                                return DisplayCard(
+                                  animeInfo: this.info[index],
+                                  animeImage: this.images[index],
+                                );
                               }),
                         ),
                         InkWell(
                           onTap: () {
-                            Navigator.of(context).pushNamedAndRemoveUntil(
-                              '/add_watchlist',
-                              (Route<dynamic> route) => false,
-                            );
+                            Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                    pageBuilder:
+                                        (context, animation1, animation2) =>
+                                            AddWatchlistScreen(
+                                              edit: false,
+                                            ),
+                                    transitionDuration: Duration(seconds: 0)));
                           },
                           child: Padding(
                             padding: EdgeInsets.only(
@@ -302,13 +358,99 @@ class _HomeScreenState extends State<HomeScreen> {
                             ],
                           ),
                         ))),
-                Container(
-                  width: size.width,
-                  height: 200,
-                  child: Center(
-                    child: Text("You do not have any favourite currently"),
-                  ),
-                ),
+                this.favAnime.isEmpty == true
+                    ? Padding(
+                        padding: EdgeInsets.only(
+                            left: config.kDefaultPadding * 3,
+                            top: config.kDefaultPadding / 2,
+                            bottom: config.kDefaultPadding,
+                            right: config.kDefaultPadding),
+                        child: Container(
+                          width: 125,
+                          height: 168,
+                          padding: EdgeInsets.all(config.kDefaultPadding),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(6),
+                            ),
+                            border: Border.all(color: Colors.white, width: 5),
+                            color: config.lightSilverBlue,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "You do not",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                  fontFamily: 'MackinacBook',
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              Text(
+                                "have any",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                  fontFamily: 'MackinacBook',
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              Text(
+                                "favourite",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                  fontFamily: 'MackinacBook',
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              Text(
+                                "currently",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                  fontFamily: 'MackinacBook',
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : SingleChildScrollView(
+                        physics: ScrollPhysics(),
+                        scrollDirection: Axis.horizontal,
+                        child: Container(
+                          height: 200,
+                          child: Row(
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(
+                                    left: config.kDefaultPadding * 2),
+                                child: ListView.builder(
+                                    physics: ScrollPhysics(),
+                                    scrollDirection: Axis.horizontal,
+                                    shrinkWrap: true,
+                                    padding: EdgeInsets.all(8),
+                                    itemCount: this.favAnime.length,
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
+                                      return DisplayCard(
+                                        animeInfo: this.favAnime[index],
+                                        animeImage: this.favAnimeImage[index],
+                                      );
+                                    }),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
               ],
             ),
           ],
@@ -345,6 +487,7 @@ class _DrawerScreenState extends State<DrawerScreen> {
   Widget build(BuildContext context) {
     if (this.details.isEmpty == true) {
       this.getInitialProfile();
+      return Loading();
     }
 
     Size size = MediaQuery.of(context).size;
@@ -374,7 +517,10 @@ class _DrawerScreenState extends State<DrawerScreen> {
                     color: Colors.white,
                     image: DecorationImage(
                       fit: BoxFit.cover,
-                      image: AssetImage('assets/images/kimetsu_movie.png'),
+                      image: this.details[0]["userProfilePicture"] == ""
+                          ? AssetImage('assets/images/kimetsu_movie.png')
+                          : CachedNetworkImageProvider(
+                              this.details[0]["userProfilePicture"]),
                     ),
                   ),
                 ),

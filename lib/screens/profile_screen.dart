@@ -90,6 +90,7 @@ class BodyProfile extends StatefulWidget {
 }
 
 class _BodyProfileState extends State<BodyProfile> {
+  String profilePicture;
   TextEditingController addBioController = TextEditingController();
   TextEditingController usernameController = TextEditingController();
   TextEditingController favouriteQuoteController = TextEditingController();
@@ -98,6 +99,7 @@ class _BodyProfileState extends State<BodyProfile> {
 
   @override
   void initState() {
+    this.profilePicture = widget.userInfo[0]["userProfilePicture"];
     addBioController =
         TextEditingController(text: widget.userInfo[0]["userBio"]);
     usernameController =
@@ -111,6 +113,8 @@ class _BodyProfileState extends State<BodyProfile> {
 
   @override
   Widget build(BuildContext context) {
+    print("below is profile picture");
+    print(this.profilePicture);
     Size size = MediaQuery.of(context).size;
     var downloadUrl = "";
     return SingleChildScrollView(
@@ -152,10 +156,9 @@ class _BodyProfileState extends State<BodyProfile> {
                     image: DecorationImage(
                       fit: BoxFit.cover,
                       // image: CachedNetworkImageProvider(downloadUrl),
-                      image: widget.userInfo[0]["userProfilePicture"] == ""
+                      image: this.profilePicture == ""
                           ? AssetImage('assets/images/kimetsu_movie.png')
-                          : CachedNetworkImageProvider(
-                              widget.userInfo[0]["userProfilePicture"]),
+                          : CachedNetworkImageProvider(this.profilePicture),
                     ),
                   ),
                 ),
@@ -209,6 +212,9 @@ class _BodyProfileState extends State<BodyProfile> {
                             'users/${FirebaseAuth.instance.currentUser.uid}');
                     await firebaseStorageRef.putFile(image);
                     downloadUrl = await firebaseStorageRef.getDownloadURL();
+                    this.setState(() {
+                      this.profilePicture = downloadUrl;
+                    });
                   }
                 },
               ),
@@ -421,7 +427,7 @@ class _BodyProfileState extends State<BodyProfile> {
                 children: [
                   FunctionButton(
                     onTap: () async {
-                      FirebaseFirestore.instance
+                      await FirebaseFirestore.instance
                           .collection("users")
                           .doc(FirebaseAuth.instance.currentUser.uid)
                           .set({
@@ -430,8 +436,9 @@ class _BodyProfileState extends State<BodyProfile> {
                         "userQuote": favouriteQuoteController.text,
                         "userFavMovieSeries":
                             favouriteMovieSeriesController.text,
-                        "userProfilePicture": downloadUrl,
+                        "userProfilePicture": this.profilePicture,
                       });
+                      this.setState(() {});
                     },
                     width: size.width * 0.7,
                     text: "Save",

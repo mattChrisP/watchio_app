@@ -1,12 +1,17 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:watchlist_app/config.dart';
+import 'package:watchlist_app/screens/home_screen.dart';
 
 class DetailMovie extends StatefulWidget {
   static const routeName = "/detail_movie";
-  static const IconData heart = IconData(0xf442,
-      fontFamily: CupertinoIcons.iconFont,
-      fontPackage: CupertinoIcons.iconFontPackage);
+  final dynamic animeInfo;
+  final dynamic animeImage;
+
+  const DetailMovie({Key key, this.animeInfo, this.animeImage})
+      : super(key: key);
 
   @override
   _DetailMovieState createState() => _DetailMovieState();
@@ -16,7 +21,16 @@ class _DetailMovieState extends State<DetailMovie> {
   var fav = false;
 
   @override
+  void initState() {
+    this.fav = widget.animeInfo["favourite"];
+
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    print("below is info");
+
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
@@ -53,45 +67,49 @@ class _DetailMovieState extends State<DetailMovie> {
                 ),
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.arrow_back,
-                    color: Colors.white,
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                      '/home_page',
-                      (Route<dynamic> route) => false,
-                    );
-                  },
-                ),
-                IconButton(
-                  // icon: Icon(
-                  //   DetailMovie.heart,
-                  //   color: fav ? Colors.white : Colors.red,
-                  // ),
-                  icon: Icon(
-                    Icons.favorite,
-                    size: 25,
-                    color: fav ? Colors.red : Colors.grey,
-                  ),
-                  onPressed: () {
-                    if (fav == true) {
-                      this.setState(() {
-                        fav = false;
+            Padding(
+              padding: EdgeInsets.only(top: config.kDefaultPadding / 1.5),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: Colors.white,
+                    ),
+                    onPressed: () async {
+                      await FirebaseFirestore.instance
+                          .collection("animes")
+                          .doc(widget.animeInfo["animeId"])
+                          .update({
+                        "favourite": this.fav,
                       });
-                    }
-                    if (fav == false) {
-                      this.setState(() {
-                        fav = true;
-                      });
-                    }
-                  },
-                ),
-              ],
+                      Navigator.of(context).pushNamedAndRemoveUntil(
+                        '/home_page',
+                        (Route<dynamic> route) => false,
+                      );
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      Icons.favorite,
+                      size: 25,
+                      color: this.fav ? Colors.red : Colors.grey,
+                    ),
+                    onPressed: () {
+                      if (this.fav == true) {
+                        this.setState(() {
+                          this.fav = false;
+                        });
+                      } else {
+                        this.setState(() {
+                          this.fav = true;
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
             ),
             Padding(
               padding: EdgeInsets.only(left: config.kDefaultPadding / 2),
@@ -100,7 +118,7 @@ class _DetailMovieState extends State<DetailMovie> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Movie Title",
+                    widget.animeInfo["movieTitle"],
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.w600,
@@ -110,10 +128,10 @@ class _DetailMovieState extends State<DetailMovie> {
                     ),
                   ),
                   SizedBox(
-                    height: config.kDefaultPadding / 2,
+                    height: config.kDefaultPadding / 4,
                   ),
                   Text(
-                    "time epi genre can add year also",
+                    widget.animeInfo["movieGenre"],
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w600,
@@ -123,7 +141,7 @@ class _DetailMovieState extends State<DetailMovie> {
                     ),
                   ),
                   SizedBox(
-                    height: config.kDefaultPadding,
+                    height: config.kDefaultPadding * 2,
                   ),
                   Text(
                     "Synopsis",
@@ -139,7 +157,7 @@ class _DetailMovieState extends State<DetailMovie> {
                     height: config.kDefaultPadding / 2,
                   ),
                   Text(
-                    "bla bla bla ",
+                    widget.animeInfo["movieSynopsis"],
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w600,
@@ -148,155 +166,32 @@ class _DetailMovieState extends State<DetailMovie> {
                       color: Colors.white.withOpacity(0.7),
                     ),
                   ),
-                  Text(
-                    "bla bla bla ",
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: "MackinacBook",
-                      letterSpacing: 1.5,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
+                  SizedBox(
+                    height: config.kDefaultPadding * 2,
                   ),
-                  Text(
-                    "bla bla bla ",
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: "MackinacBook",
-                      letterSpacing: 1.5,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
-                  ),
-                  Text(
-                    "bla bla bla ",
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: "MackinacBook",
-                      letterSpacing: 1.5,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
-                  ),
-                  Text(
-                    "bla bla bla ",
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: "MackinacBook",
-                      letterSpacing: 1.5,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
-                  ),
-                  Text(
-                    "bla bla bla ",
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: "MackinacBook",
-                      letterSpacing: 1.5,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
-                  ),
-                  Text(
-                    "bla bla bla ",
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: "MackinacBook",
-                      letterSpacing: 1.5,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
-                  ),
-                  Text(
-                    "bla bla bla ",
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: "MackinacBook",
-                      letterSpacing: 1.5,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
-                  ),
-                  Text(
-                    "bla bla bla ",
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: "MackinacBook",
-                      letterSpacing: 1.5,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
-                  ),
-                  Text(
-                    "bla bla bla ",
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: "MackinacBook",
-                      letterSpacing: 1.5,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
-                  ),
-                  Text(
-                    "bla bla bla ",
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: "MackinacBook",
-                      letterSpacing: 1.5,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
-                  ),
-                  Text(
-                    "bla bla bla ",
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: "MackinacBook",
-                      letterSpacing: 1.5,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
-                  ),
-                  Text(
-                    "bla bla bla ",
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: "MackinacBook",
-                      letterSpacing: 1.5,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
-                  ),
-                  Text(
-                    "bla bla bla ",
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: "MackinacBook",
-                      letterSpacing: 1.5,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
-                  ),
-                  Text(
-                    "bla bla bla ",
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: "MackinacBook",
-                      letterSpacing: 1.5,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
-                  ),
-                  Text(
-                    "bla bla bla ",
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: "MackinacBook",
-                      letterSpacing: 1.5,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        "Status: ",
+                        style: TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: "MackinacBook",
+                          letterSpacing: 1.5,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        widget.animeInfo["status"],
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: "MackinacBook",
+                          letterSpacing: 1.5,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
