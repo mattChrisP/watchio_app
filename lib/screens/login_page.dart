@@ -311,7 +311,7 @@ class _LoginPageState extends State<LoginPage>
                                         style: TextStyle(
                                           fontSize: 16,
                                           decoration: TextDecoration.underline,
-                                          color: config.lightGreenishBlue,
+                                          color: Colors.black,
                                         ))),
                               ),
                               Row(
@@ -359,7 +359,8 @@ class _LoginPageState extends State<LoginPage>
                                             EdgeInsets.symmetric(vertical: 16),
                                         height: 58,
                                         decoration: BoxDecoration(
-                                          color: Color(0xff651511),
+                                          color: config.mediumBlue
+                                              .withOpacity(0.7),
                                           borderRadius:
                                               BorderRadius.circular(16),
                                         ),

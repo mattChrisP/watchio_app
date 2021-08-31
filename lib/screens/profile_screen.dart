@@ -21,59 +21,47 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  List<dynamic> details = [];
+  dynamic details = "";
 
-  void getInitialProfile() async {
-    dynamic data = await FirebaseFirestore.instance.collection("users").get();
+  Future getInitialProfile() async {
+    print("get initial profile");
+    dynamic data = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(FirebaseAuth.instance.currentUser.uid)
+        .get();
 
-    for (var i = 0; i < data.docs.length; i++) {
-      this.details.add(data.docs[i].data());
+    if (data.exists) {
+      print("data exists");
+      return data.data();
+    } else {
+      print("data doesn't exists");
+      return false;
     }
-    print(this.details);
-    this.setState(() {});
   }
 
-  @override
-  void initState() {
-    this.getInitialProfile();
-    // if (this.details.isEmpty) {
-    //   print(this.details);
-    //   this.getInitialProfile();
-    //   print("after");
-    //   print(this.details);
-    // }
-    // addBioController = TextEditingController(text: this.details[0]["userBio"]);
-    // usernameController =
-    //     TextEditingController(text: this.details[0]["username"]);
-    // favouriteQuoteController =
-    //     TextEditingController(text: this.details[0]["userQuote"]);
-    // favouriteMovieSeriesController =
-    //     TextEditingController(text: this.details[0]["userFavMovieSeries"]);
-    super.initState();
-  }
+  // @override
+  // void initState() {
+  //   this.getInitialProfile();
+  //   super.initState();
+  // }
 
   @override
   Widget build(BuildContext context) {
     print(this.details);
 
-    if (this.details.isEmpty) {
-      return Loading();
-    }
-    // } else {
-    //   addBioController =
-    //       TextEditingController(text: this.details[0]["userBio"]);
-    //   usernameController =
-    //       TextEditingController(text: this.details[0]["username"]);
-    //   favouriteQuoteController =
-    //       TextEditingController(text: this.details[0]["userQuote"]);
-    //   favouriteMovieSeriesController =
-    //       TextEditingController(text: this.details[0]["userFavMovieSeries"]);
-    // }
-
     return Scaffold(
-      body: BodyProfile(
-        userInfo: this.details,
-      ),
+      body: FutureBuilder(
+          future: this.getInitialProfile(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              print("has data");
+              return BodyProfile(
+                userInfo: snapshot.data,
+              );
+            } else {
+              return Loading();
+            }
+          }),
       bottomNavigationBar: BottomNavBar(
         current: "profile",
       ),
@@ -99,22 +87,19 @@ class _BodyProfileState extends State<BodyProfile> {
 
   @override
   void initState() {
-    this.profilePicture = widget.userInfo[0]["userProfilePicture"];
-    addBioController =
-        TextEditingController(text: widget.userInfo[0]["userBio"]);
-    usernameController =
-        TextEditingController(text: widget.userInfo[0]["username"]);
-    favouriteQuoteController =
-        TextEditingController(text: widget.userInfo[0]["userQuote"]);
-    favouriteMovieSeriesController =
-        TextEditingController(text: widget.userInfo[0]["userFavMovieSeries"]);
+    if (widget.userInfo != false) {
+      profilePicture = widget.userInfo["userProfilePicture"];
+      addBioController.text = widget.userInfo["userBio"];
+      usernameController.text = widget.userInfo["username"];
+      favouriteQuoteController.text = widget.userInfo["userQuote"];
+      favouriteMovieSeriesController.text =
+          widget.userInfo["userFavMovieSeries"];
+    }
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    print("below is profile picture");
-    print(this.profilePicture);
     Size size = MediaQuery.of(context).size;
     var downloadUrl = "";
     return SingleChildScrollView(
@@ -156,7 +141,7 @@ class _BodyProfileState extends State<BodyProfile> {
                     image: DecorationImage(
                       fit: BoxFit.cover,
                       // image: CachedNetworkImageProvider(downloadUrl),
-                      image: this.profilePicture == ""
+                      image: this.profilePicture == null
                           ? AssetImage('assets/images/kimetsu_movie.png')
                           : CachedNetworkImageProvider(this.profilePicture),
                     ),
@@ -431,6 +416,7 @@ class _BodyProfileState extends State<BodyProfile> {
                           .collection("users")
                           .doc(FirebaseAuth.instance.currentUser.uid)
                           .set({
+                        "uid": FirebaseAuth.instance.currentUser.uid,
                         "userBio": addBioController.text,
                         "username": usernameController.text,
                         "userQuote": favouriteQuoteController.text,

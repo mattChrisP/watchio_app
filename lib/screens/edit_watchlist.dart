@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:watchlist_app/config.dart';
 import 'package:watchlist_app/screens/add_watclist_screen.dart';
@@ -17,11 +18,16 @@ class _EditWatchlistState extends State<EditWatchlist> {
   List<dynamic> info = [];
 
   List<dynamic> images = [];
+  bool infoExist = false;
 
   void getAnimeInfo() async {
-    dynamic data = await FirebaseFirestore.instance.collection("animes").get();
+    dynamic data = await FirebaseFirestore.instance
+        .collection("animes")
+        .where("uid", isEqualTo: FirebaseAuth.instance.currentUser.uid)
+        .get();
     for (var i = 0; i < data.docs.length; i++) {
       this.info.add(data.docs[i].data());
+      this.infoExist = data.docs[i].exists;
 
       List image = [];
       dynamic imageData = await FirebaseFirestore.instance
@@ -46,7 +52,7 @@ class _EditWatchlistState extends State<EditWatchlist> {
 
   @override
   Widget build(BuildContext context) {
-    if (this.info.isEmpty || this.images.isEmpty) {
+    if ((this.info.isEmpty || this.images.isEmpty) & this.infoExist) {
       return Loading();
     }
     print("below is iamges");

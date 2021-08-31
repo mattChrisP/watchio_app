@@ -8,13 +8,13 @@ class BackgroundPainter extends CustomPainter {
   BackgroundPainter({
     Animation<double> animation,
   })  : bluePaint = Paint()
-          ..color = config.lightGreenishBlue
+          ..color = config.darkPurple
           ..style = PaintingStyle.fill,
         greyPaint = Paint()
-          ..color = config.lightGreenishYellow
+          ..color = config.mediumPurple
           ..style = PaintingStyle.fill,
         orangePaint = Paint()
-          ..color = config.lightOrange
+          ..color = config.lightSilverPurple
           ..style = PaintingStyle.fill,
         linePaint = Paint()
           ..color = config.lightSilverBlue

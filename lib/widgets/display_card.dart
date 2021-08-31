@@ -7,8 +7,10 @@ import 'package:watchlist_app/screens/home_screen.dart';
 class DisplayCard extends StatelessWidget {
   final dynamic animeInfo;
   final dynamic animeImage;
+  final bool view;
 
-  const DisplayCard({Key key, this.animeInfo, this.animeImage})
+  const DisplayCard(
+      {Key key, this.animeInfo, this.animeImage, @required this.view})
       : super(key: key);
   @override
   Widget build(BuildContext context) {
@@ -24,6 +26,7 @@ class DisplayCard extends StatelessWidget {
                 PageRouteBuilder(
                     pageBuilder: (context, animation1, animation2) =>
                         DetailMovie(
+                          view: view,
                           animeInfo: animeInfo,
                           animeImage: animeImage,
                         ),
