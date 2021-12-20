@@ -11,35 +11,19 @@ import 'package:watchlist_app/widgets/bottom_nav_bar.dart';
 import 'package:watchlist_app/widgets/display_card.dart';
 import 'package:watchlist_app/widgets/loading.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   static const routeName = '/home_page';
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          DrawerScreen(),
-          HomeScreen(),
-        ],
-      ),
-      bottomNavigationBar: BottomNavBar(
-        current: "home",
-      ),
-    );
-  }
+  _HomePageState createState() => _HomePageState();
 }
 
-class HomeScreen extends StatefulWidget {
-  @override
-  _HomeScreenState createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
+class _HomePageState extends State<HomePage> {
   List<dynamic> info = [];
   List<dynamic> favAnime = [];
   List<dynamic> images = [];
   List<dynamic> favAnimeImage = [];
+  String details = "";
 
   Future getAnimeInfo() async {
     dynamic data = await FirebaseFirestore.instance
@@ -72,6 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
       this.images.add(image);
     }
+
     return {
       "info": this.info,
       "favAnime": this.favAnime,
@@ -80,164 +65,347 @@ class _HomeScreenState extends State<HomeScreen> {
     };
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: FutureBuilder(
+        future: this.getAnimeInfo(),
+        builder: (context, snapshot) {
+          print(snapshot.data);
+          print("above is data");
+          if (snapshot.hasData) {
+            return Stack(
+              children: [
+                DrawerScreen(
+                  animeInfo: snapshot.data == null
+                      ? {
+                          "info": [],
+                          "favAnime": [],
+                          "images": [],
+                          "favAnimeImage": [],
+                        }
+                      : snapshot.data,
+                ),
+                HomeScreen(
+                  animeInfo: snapshot.data == null
+                      ? {
+                          "info": [],
+                          "favAnime": [],
+                          "images": [],
+                          "favAnimeImage": [],
+                        }
+                      : snapshot.data,
+                ),
+              ],
+            );
+          } else {
+            return Loading();
+          }
+        },
+      ),
+      bottomNavigationBar: BottomNavBar(
+        userInfo: this.details,
+        current: "home",
+      ),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  final dynamic animeInfo;
+
+  const HomeScreen({Key key, this.animeInfo}) : super(key: key);
+
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   double xOffset = 0;
   double yOffset = 0;
   double scaleFactor = 1;
-
+  String searchString = "";
   bool isDrawerOpen = false;
+
+  filter(String searchString, animeList) {
+    print("Filter ${animeList.length}");
+    print("this is");
+    print(animeList["info"]);
+    Map searchResult = {
+      "info": [],
+      "images": [],
+    };
+    if (this.searchString != "") {
+      for (var i = 0; i < animeList.length; i++) {
+        if (animeList["info"][i]["movieTitle"].contains(this.searchString)) {
+          searchResult["info"].add(animeList["info"][i]);
+          searchResult["images"].add(animeList["images"][i]);
+        }
+      }
+      return searchResult;
+    }
+    return animeList;
+  }
 
   @override
   Widget build(BuildContext context) {
+    print("below is anime info");
+    print(widget.animeInfo);
     Size size = MediaQuery.of(context).size;
-    return FutureBuilder(
-      future: this.getAnimeInfo(),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return AnimatedContainer(
-            transform: Matrix4.translationValues(xOffset, yOffset, 0)
-              ..scale(scaleFactor)
-              ..rotateY(isDrawerOpen ? -0.5 : 0),
-            duration: Duration(milliseconds: 250),
-            decoration: BoxDecoration(
-                gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      config.bluenishPurple,
-                      config.mediumPurple,
-                      config.mediumPink
-                    ]),
-                borderRadius: BorderRadius.circular(isDrawerOpen ? 40 : 0.0)),
-            child: SingleChildScrollView(
-              child: Stack(
-                children: [
-                  Container(
-                    height: size.height * 0.225,
-                    decoration: BoxDecoration(
-                        color: config.mediumBlue.withOpacity(0.6),
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(36),
-                        )),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+
+    return AnimatedContainer(
+      transform: Matrix4.translationValues(xOffset, yOffset, 0)
+        ..scale(scaleFactor)
+        ..rotateY(isDrawerOpen ? -0.5 : 0),
+      duration: Duration(milliseconds: 250),
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                config.bluenishPurple,
+                config.mediumPurple,
+                config.mediumPink
+              ]),
+          borderRadius: BorderRadius.circular(isDrawerOpen ? 40 : 0.0)),
+      child: SingleChildScrollView(
+        child: Stack(
+          children: [
+            Container(
+              height: size.height * 0.225,
+              decoration: BoxDecoration(
+                  color: config.mediumBlue.withOpacity(0.6),
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(36),
+                  )),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: 50,
+                ),
+                Container(
+                  margin: EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    // mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(
-                        height: 50,
-                      ),
-                      Container(
-                        margin: EdgeInsets.symmetric(horizontal: 20),
-                        child: Row(
-                          // mainAxisAlignment: MainAxisAlignment.center,
+                      isDrawerOpen
+                          ? IconButton(
+                              icon: Icon(
+                                Icons.arrow_back_ios,
+                                color: Colors.white,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  xOffset = 0;
+                                  yOffset = 0;
+                                  scaleFactor = 1;
+                                  isDrawerOpen = false;
+                                });
+                              },
+                            )
+                          : IconButton(
+                              icon: Icon(
+                                Icons.menu,
+                                color: Colors.white,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  xOffset = 230;
+                                  yOffset = 150;
+                                  scaleFactor = 0.6;
+                                  isDrawerOpen = true;
+                                });
+                              }),
+                      Padding(
+                        padding: EdgeInsets.only(
+                            left:
+                                size.width / 4 - config.kDefaultPadding * 2.5),
+                        child: Column(
                           children: [
-                            isDrawerOpen
-                                ? IconButton(
-                                    icon: Icon(
-                                      Icons.arrow_back_ios,
-                                      color: Colors.white,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        xOffset = 0;
-                                        yOffset = 0;
-                                        scaleFactor = 1;
-                                        isDrawerOpen = false;
-                                      });
-                                    },
-                                  )
-                                : IconButton(
-                                    icon: Icon(
-                                      Icons.menu,
-                                      color: Colors.white,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        xOffset = 230;
-                                        yOffset = 150;
-                                        scaleFactor = 0.6;
-                                        isDrawerOpen = true;
-                                      });
-                                    }),
-                            Padding(
-                              padding: EdgeInsets.only(
-                                  left: size.width / 4 -
-                                      config.kDefaultPadding * 2.5),
-                              child: Column(
-                                children: [
-                                  Text(
-                                    "Watchio",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 32,
-                                      letterSpacing: 1.5,
-                                      fontFamily: 'MackinacBook',
-                                    ),
-                                  ),
-                                ],
+                            Text(
+                              "Watchio",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 32,
+                                letterSpacing: 1.5,
+                                fontFamily: 'MackinacBook',
                               ),
                             ),
                           ],
                         ),
                       ),
-                      Padding(
-                        padding: EdgeInsets.only(
-                            left: 32.0,
-                            right: 32,
-                            top: 40,
-                            bottom: config.kDefaultPadding / 2),
-                        child: Container(
-                          height: 50,
-                          padding: EdgeInsets.symmetric(horizontal: 25),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          child: TextField(
-                            textCapitalization: TextCapitalization.sentences,
-                            onChanged: (value) {},
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              icon: SvgPicture.asset("assets/icons/search.svg"),
-                              hintText: "Search your watchlist",
-                              hintStyle: TextStyle(
-                                color: Colors.black.withOpacity(0.42),
-                                fontFamily: "MackinacBook",
-                                fontSize: 15,
-                              ),
-                            ),
-                          ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(
+                      left: 32.0,
+                      right: 32,
+                      top: 40,
+                      bottom: config.kDefaultPadding / 2),
+                  child: Container(
+                    height: 50,
+                    padding: EdgeInsets.symmetric(horizontal: 25),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: TextField(
+                      textCapitalization: TextCapitalization.sentences,
+                      onChanged: (value) {
+                        this.setState(() {
+                          this.searchString = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        icon: SvgPicture.asset("assets/icons/search.svg"),
+                        hintText: "Search your watchlist",
+                        hintStyle: TextStyle(
+                          color: Colors.black.withOpacity(0.42),
+                          fontFamily: "MackinacBook",
+                          fontSize: 15,
                         ),
                       ),
-                      Padding(
-                          padding: EdgeInsets.only(left: 20.0),
-                          child: Container(
-                              height: 35,
-                              padding: EdgeInsets.only(left: 20.0),
-                              decoration: BoxDecoration(
-                                  border: Border(
-                                      left: BorderSide(
-                                          color: config.lightGreenishBlue,
-                                          style: BorderStyle.solid,
-                                          width: 3.0))),
-                              child: Center(
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "My Watchlist",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 18,
-                                        fontFamily: 'MackinacBook',
-                                        letterSpacing: 1.2,
-                                      ),
-                                    ),
-                                  ],
+                    ),
+                  ),
+                ),
+                Padding(
+                    padding: EdgeInsets.only(left: 20.0),
+                    child: Container(
+                        height: 35,
+                        padding: EdgeInsets.only(left: 20.0),
+                        decoration: BoxDecoration(
+                            border: Border(
+                                left: BorderSide(
+                                    color: config.lightGreenishBlue,
+                                    style: BorderStyle.solid,
+                                    width: 3.0))),
+                        child: Center(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "My Watchlist",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 18,
+                                  fontFamily: 'MackinacBook',
+                                  letterSpacing: 1.2,
                                 ),
-                              ))),
-                      SingleChildScrollView(
+                              ),
+                            ],
+                          ),
+                        ))),
+                AnimeList(
+                  animeInfo: this.filter(this.searchString, widget.animeInfo),
+                ),
+
+                // Container(
+                //   width: size.width,
+                //   height: 200,
+                //   child: Center(
+                //     child: Text("You do not have any watchlist currently"),
+                //   ),
+                // ),
+                Padding(
+                    padding: EdgeInsets.only(left: 20.0),
+                    child: Container(
+                        height: 35,
+                        padding: EdgeInsets.only(left: 20.0),
+                        decoration: BoxDecoration(
+                            border: Border(
+                                left: BorderSide(
+                                    color: config.lightGreenishBlue,
+                                    style: BorderStyle.solid,
+                                    width: 3.0))),
+                        child: Center(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Favourites",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 18,
+                                  fontFamily: 'MackinacBook',
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ))),
+                widget.animeInfo["favAnime"].isEmpty == true
+                    ? Padding(
+                        padding: EdgeInsets.only(
+                            left: config.kDefaultPadding * 3,
+                            top: config.kDefaultPadding / 2,
+                            bottom: config.kDefaultPadding,
+                            right: config.kDefaultPadding),
+                        child: Container(
+                          width: 125,
+                          height: 168,
+                          padding: EdgeInsets.all(config.kDefaultPadding),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(6),
+                            ),
+                            border: Border.all(color: Colors.white, width: 5),
+                            color: config.lightSilverBlue,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "You do not",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                  fontFamily: 'MackinacBook',
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              Text(
+                                "have any",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                  fontFamily: 'MackinacBook',
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              Text(
+                                "favourite",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                  fontFamily: 'MackinacBook',
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              Text(
+                                "currently",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                  fontFamily: 'MackinacBook',
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : SingleChildScrollView(
                         physics: ScrollPhysics(),
                         scrollDirection: Axis.horizontal,
                         child: Container(
@@ -252,229 +420,135 @@ class _HomeScreenState extends State<HomeScreen> {
                                     scrollDirection: Axis.horizontal,
                                     shrinkWrap: true,
                                     padding: EdgeInsets.all(8),
-                                    itemCount: this.info.length,
+                                    itemCount:
+                                        widget.animeInfo["favAnime"].length,
                                     itemBuilder:
                                         (BuildContext context, int index) {
                                       return DisplayCard(
                                         view: false,
-                                        animeInfo: this.info[index],
-                                        animeImage: this.images[index],
+                                        animeInfo: widget.animeInfo["favAnime"]
+                                            [index],
+                                        animeImage: widget
+                                            .animeInfo["favAnimeImage"][index],
                                       );
                                     }),
-                              ),
-                              InkWell(
-                                onTap: () {
-                                  Navigator.push(
-                                      context,
-                                      PageRouteBuilder(
-                                          pageBuilder: (context, animation1,
-                                                  animation2) =>
-                                              AddWatchlistScreen(
-                                                edit: false,
-                                              ),
-                                          transitionDuration:
-                                              Duration(seconds: 0)));
-                                },
-                                child: Padding(
-                                  padding: EdgeInsets.only(
-                                      bottom: config.kDefaultPadding,
-                                      right: config.kDefaultPadding),
-                                  child: Container(
-                                    width: 125,
-                                    height: 168,
-                                    padding:
-                                        EdgeInsets.all(config.kDefaultPadding),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.all(
-                                        Radius.circular(6),
-                                      ),
-                                      border: Border.all(
-                                          color: Colors.white, width: 5),
-                                      color: config.lightSilverBlue,
-                                    ),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.add,
-                                        ),
-                                        Text(
-                                          "Add",
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 12,
-                                            fontFamily: 'MackinacBook',
-                                            letterSpacing: 1.2,
-                                          ),
-                                        ),
-                                        Text(
-                                          "Watchlist",
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 12,
-                                            fontFamily: 'MackinacBook',
-                                            letterSpacing: 1.2,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
                               ),
                             ],
                           ),
                         ),
                       ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-                      // Container(
-                      //   width: size.width,
-                      //   height: 200,
-                      //   child: Center(
-                      //     child: Text("You do not have any watchlist currently"),
-                      //   ),
-                      // ),
-                      Padding(
-                          padding: EdgeInsets.only(left: 20.0),
-                          child: Container(
-                              height: 35,
-                              padding: EdgeInsets.only(left: 20.0),
-                              decoration: BoxDecoration(
-                                  border: Border(
-                                      left: BorderSide(
-                                          color: config.lightGreenishBlue,
-                                          style: BorderStyle.solid,
-                                          width: 3.0))),
-                              child: Center(
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Favourites",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 18,
-                                        fontFamily: 'MackinacBook',
-                                        letterSpacing: 1.2,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ))),
-                      this.favAnime.isEmpty == true
-                          ? Padding(
-                              padding: EdgeInsets.only(
-                                  left: config.kDefaultPadding * 3,
-                                  top: config.kDefaultPadding / 2,
-                                  bottom: config.kDefaultPadding,
-                                  right: config.kDefaultPadding),
-                              child: Container(
-                                width: 125,
-                                height: 168,
-                                padding: EdgeInsets.all(config.kDefaultPadding),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(6),
-                                  ),
-                                  border:
-                                      Border.all(color: Colors.white, width: 5),
-                                  color: config.lightSilverBlue,
-                                ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "You do not",
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 12,
-                                        fontFamily: 'MackinacBook',
-                                        letterSpacing: 1.2,
-                                      ),
-                                    ),
-                                    Text(
-                                      "have any",
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 12,
-                                        fontFamily: 'MackinacBook',
-                                        letterSpacing: 1.2,
-                                      ),
-                                    ),
-                                    Text(
-                                      "favourite",
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 12,
-                                        fontFamily: 'MackinacBook',
-                                        letterSpacing: 1.2,
-                                      ),
-                                    ),
-                                    Text(
-                                      "currently",
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 12,
-                                        fontFamily: 'MackinacBook',
-                                        letterSpacing: 1.2,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                          : SingleChildScrollView(
-                              physics: ScrollPhysics(),
-                              scrollDirection: Axis.horizontal,
-                              child: Container(
-                                height: 200,
-                                child: Row(
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.only(
-                                          left: config.kDefaultPadding * 2),
-                                      child: ListView.builder(
-                                          physics: ScrollPhysics(),
-                                          scrollDirection: Axis.horizontal,
-                                          shrinkWrap: true,
-                                          padding: EdgeInsets.all(8),
-                                          itemCount: this.favAnime.length,
-                                          itemBuilder: (BuildContext context,
-                                              int index) {
-                                            return DisplayCard(
-                                              view: false,
-                                              animeInfo: this.favAnime[index],
-                                              animeImage:
-                                                  this.favAnimeImage[index],
-                                            );
-                                          }),
-                                    ),
-                                  ],
-                                ),
-                              ),
+class AnimeList extends StatefulWidget {
+  final dynamic animeInfo;
+
+  const AnimeList({Key key, this.animeInfo}) : super(key: key);
+
+  @override
+  _AnimeListState createState() => _AnimeListState();
+}
+
+class _AnimeListState extends State<AnimeList> {
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      physics: ScrollPhysics(),
+      scrollDirection: Axis.horizontal,
+      child: Container(
+        height: 200,
+        child: Row(
+          children: [
+            Padding(
+              padding: EdgeInsets.only(left: config.kDefaultPadding * 2),
+              child: ListView.builder(
+                  physics: ScrollPhysics(),
+                  scrollDirection: Axis.horizontal,
+                  shrinkWrap: true,
+                  padding: EdgeInsets.all(8),
+                  itemCount: widget.animeInfo["info"].length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return DisplayCard(
+                      view: false,
+                      animeInfo: widget.animeInfo["info"][index],
+                      animeImage: widget.animeInfo["images"][index],
+                    );
+                  }),
+            ),
+            InkWell(
+              onTap: () {
+                Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                        pageBuilder: (context, animation1, animation2) =>
+                            AddWatchlistScreen(
+                              edit: false,
                             ),
+                        transitionDuration: Duration(seconds: 0)));
+              },
+              child: Padding(
+                padding: EdgeInsets.only(
+                    bottom: config.kDefaultPadding,
+                    right: config.kDefaultPadding),
+                child: Container(
+                  width: 125,
+                  height: 168,
+                  padding: EdgeInsets.all(config.kDefaultPadding),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(6),
+                    ),
+                    border: Border.all(color: Colors.white, width: 5),
+                    color: config.lightSilverBlue,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.add,
+                      ),
+                      Text(
+                        "Add",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                          fontFamily: 'MackinacBook',
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      Text(
+                        "Watchlist",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                          fontFamily: 'MackinacBook',
+                          letterSpacing: 1.2,
+                        ),
+                      ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
-          );
-        } else {
-          return Loading();
-        }
-      },
+          ],
+        ),
+      ),
     );
   }
 }
 
 class DrawerScreen extends StatefulWidget {
+  final dynamic animeInfo;
+
+  const DrawerScreen({Key key, this.animeInfo}) : super(key: key);
   @override
   _DrawerScreenState createState() => _DrawerScreenState();
 }
@@ -552,6 +626,40 @@ class _DrawerScreenState extends State<DrawerScreen> {
                       ),
                     ),
                   ],
+                ),
+                ListTile(
+                  title: Text(
+                    "My Watchlist: ${widget.animeInfo["info"].length}",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 18,
+                      fontFamily: 'MackinacBook',
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  onTap: () {
+                    FirebaseAuth.instance.signOut();
+                    Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (context) => LoginPage()));
+                  },
+                ),
+                ListTile(
+                  title: Text(
+                    "My Favourite: ${widget.animeInfo["favAnime"].length}",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 18,
+                      fontFamily: 'MackinacBook',
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  onTap: () {
+                    FirebaseAuth.instance.signOut();
+                    Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (context) => LoginPage()));
+                  },
                 ),
                 ListTile(
                   leading: Icon(

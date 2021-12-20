@@ -28,110 +28,115 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
     return Scaffold(
       body: FutureBuilder(
           future: this.getAllUser(),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               print(snapshot.data);
-              return SingleChildScrollView(
-                child: Stack(
-                  children: [
-                    Container(
-                      height: size.height,
-                      color: config.superLightOrange,
-                    ),
-                    Container(
-                      height: config.kDefaultPadding * 6 + 65,
-                      decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                            config.bluenishPurple,
-                            config.mediumPurple
-                          ])),
-                    ),
-                    Positioned(
-                      top: config.kDefaultPadding * 6,
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 40.0, horizontal: 32.0),
-                            child: Container(
-                              height: 50,
-                              width: size.width * 0.8,
-                              padding: EdgeInsets.symmetric(horizontal: 25),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                border:
-                                    Border.all(color: Colors.white, width: 5),
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                              child: TextField(
-                                textCapitalization:
-                                    TextCapitalization.sentences,
-                                onChanged: (value) {},
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  icon: SvgPicture.asset(
-                                      "assets/icons/search.svg"),
-                                  hintText: "Search for other people",
-                                  hintStyle: TextStyle(
-                                    color: Colors.black.withOpacity(0.42),
-                                    fontFamily: "MackinacBook",
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Positioned(
-                      top: size.height * 0.2 + config.kDefaultPadding,
-                      child: Container(
-                        width: size.width,
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding:
-                                  EdgeInsets.only(top: config.kDefaultPadding),
-                              child: ListView.builder(
-                                physics: ScrollPhysics(),
-                                scrollDirection: Axis.vertical,
-                                shrinkWrap: true,
-                                itemCount: snapshot.data.length,
-                                itemBuilder: (BuildContext context, int index) {
-                                  return DisplayPeople(
-                                    userInfo: snapshot.data[index],
-                                  );
-                                },
-                              ),
-                            ),
-                            Column(
-                              children: [
-                                Divider(
-                                  thickness: 1,
-                                ),
-                                Text("End"),
-                              ],
-                            )
-                          ],
-                        ),
-                      ),
-                    )
-                  ],
-                ),
+              return ExploreBody(
+                snapshot: snapshot,
               );
             } else {
               return Loading();
             }
           }),
       bottomNavigationBar: BottomNavBar(current: "explore"),
+    );
+  }
+}
+
+class ExploreBody extends StatelessWidget {
+  final dynamic snapshot;
+
+  const ExploreBody({Key key, this.snapshot}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
+    return SingleChildScrollView(
+      child: Stack(
+        children: [
+          Container(
+            height: size.height,
+            color: config.superLightOrange,
+          ),
+          Container(
+            height: config.kDefaultPadding * 6 + 65,
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [config.bluenishPurple, config.mediumPurple])),
+          ),
+          Positioned(
+            top: config.kDefaultPadding * 6,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 40.0, horizontal: 32.0),
+                  child: Container(
+                    height: 50,
+                    width: size.width * 0.8,
+                    padding: EdgeInsets.symmetric(horizontal: 25),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.white, width: 5),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: TextField(
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        icon: SvgPicture.asset("assets/icons/search.svg"),
+                        hintText: "Search for other people",
+                        hintStyle: TextStyle(
+                          color: Colors.black.withOpacity(0.42),
+                          fontFamily: "MackinacBook",
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            top: size.height * 0.2 + config.kDefaultPadding,
+            child: Container(
+              width: size.width,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(top: config.kDefaultPadding),
+                    child: ListView.builder(
+                      physics: ScrollPhysics(),
+                      scrollDirection: Axis.vertical,
+                      shrinkWrap: true,
+                      itemCount: snapshot.data.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return DisplayPeople(
+                          userInfo: snapshot.data[index],
+                        );
+                      },
+                    ),
+                  ),
+                  Column(
+                    children: [
+                      Divider(
+                        thickness: 1,
+                      ),
+                      Text("End"),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          )
+        ],
+      ),
     );
   }
 }

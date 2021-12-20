@@ -1,15 +1,20 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:watchlist_app/screens/edit_watchlist.dart';
 import 'package:watchlist_app/screens/explore_screen.dart';
 import 'package:watchlist_app/screens/home_screen.dart';
 import 'package:watchlist_app/screens/profile_screen.dart';
 import 'package:watchlist_app/screens/add_watclist_screen.dart';
+import 'package:watchlist_app/widgets/custom_alert_dialog.dart';
 
 class BottomNavBar extends StatefulWidget {
+  final String userInfo;
   final String current;
   const BottomNavBar({
     Key key,
     @required this.current,
+    this.userInfo,
   }) : super(key: key);
 
   @override
@@ -17,10 +22,8 @@ class BottomNavBar extends StatefulWidget {
 }
 
 class _BottomNavBarState extends State<BottomNavBar> {
-  @override
-  void initState() {
-    super.initState();
-  }
+  String details = "";
+  bool check = false;
 
   @override
   void setState(fn) {
@@ -30,9 +33,24 @@ class _BottomNavBarState extends State<BottomNavBar> {
   }
 
   int index = 0;
+  void getInitialProfile() async {
+    dynamic data = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(FirebaseAuth.instance.currentUser.uid)
+        .get();
+    print(data.data());
+    print("below is bool above is data");
+    this.check = true;
+    if (data.exists) {
+      this.details = data.data()["username"];
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (this.check == false) {
+      this.getInitialProfile();
+    }
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: Container(
@@ -209,13 +227,33 @@ class _BottomNavBarState extends State<BottomNavBar> {
                           ),
                         ),
                         onTap: () {
-                          Navigator.push(
-                              context,
-                              PageRouteBuilder(
-                                  pageBuilder:
-                                      (context, animation1, animation2) =>
-                                          ExploreScreen(),
-                                  transitionDuration: Duration(seconds: 0)));
+                          if (this.details != "") {
+                            Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                    pageBuilder:
+                                        (context, animation1, animation2) =>
+                                            ExploreScreen(),
+                                    transitionDuration: Duration(seconds: 0)));
+                          } else {
+                            showDialog(
+                                context: context,
+                                builder: (context) => CustomAlertDialog(
+                                      alertText:
+                                          "You need to create a username before continuing!",
+                                      onTap: () {
+                                        Navigator.push(
+                                            context,
+                                            PageRouteBuilder(
+                                                pageBuilder: (context,
+                                                        animation1,
+                                                        animation2) =>
+                                                    ProfileScreen(),
+                                                transitionDuration:
+                                                    Duration(seconds: 0)));
+                                      },
+                                    ));
+                          }
                         },
                       ),
                     ),

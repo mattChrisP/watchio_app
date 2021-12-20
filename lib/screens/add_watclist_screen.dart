@@ -13,6 +13,7 @@ import 'package:watchlist_app/config.dart';
 import 'package:watchlist_app/widgets/add_image.dart';
 import 'package:watchlist_app/widgets/bottom_nav_bar.dart';
 import 'package:watchlist_app/widgets/buttons.dart';
+import 'package:watchlist_app/widgets/custom_alert_dialog.dart';
 
 class AddWatchlistScreen extends StatefulWidget {
   final bool edit;
@@ -38,7 +39,7 @@ class _AddWatchlistScreenState extends State<AddWatchlistScreen> {
   File imageFile;
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
     if (widget.edit == true) {
       statusController.choice = widget.animeInfo["status"];
       titleController =
@@ -48,6 +49,20 @@ class _AddWatchlistScreenState extends State<AddWatchlistScreen> {
       synopsisController =
           TextEditingController(text: widget.animeInfo["movieSynopsis"]);
     }
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // if (widget.edit == true) {
+    //   statusController.choice = widget.animeInfo["status"];
+    //   titleController =
+    //       TextEditingController(text: widget.animeInfo["movieTitle"]);
+    //   genresController =
+    //       TextEditingController(text: widget.animeInfo["movieGenre"]);
+    //   synopsisController =
+    //       TextEditingController(text: widget.animeInfo["movieSynopsis"]);
+    // }
 
     Size size = MediaQuery.of(context).size;
     return Scaffold(
@@ -59,7 +74,16 @@ class _AddWatchlistScreenState extends State<AddWatchlistScreen> {
           icon: Icon(Icons.arrow_back),
           color: Colors.white,
           onPressed: () {
-            Navigator.of(context).pop();
+            showDialog(
+                context: context,
+                builder: (context) => CustomAlertDialog(
+                      alertText:
+                          "Your Listing has not been saved, are you sure you want to exit?",
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                      },
+                    ));
           },
         ),
       ),

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path/path.dart';
 import 'package:flutter/material.dart';
@@ -31,17 +32,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
         .get();
 
     if (data.exists) {
-      print("data exists");
       return data.data();
     } else {
-      print("data doesn't exists");
       return false;
     }
   }
 
+  // getToken() async {
+  //   String token = await FirebaseMessaging.instance.getToken();
+  //   print(token);
+  // }
+
   // @override
   // void initState() {
-  //   this.getInitialProfile();
+  //   print("below is token");
+  //   getToken();
   //   super.initState();
   // }
 
